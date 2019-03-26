@@ -14,11 +14,6 @@ import time
 
 from diagnostic import displayTrajectory
 
-try:
-    from StringIO import StringIO
-except ModuleNotFoundError:
-    from io import StringIO
-
 
 class CallbackDDPLogger:
     def __init__(self):

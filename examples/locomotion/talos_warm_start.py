@@ -4,7 +4,7 @@ import numpy as np
 import pinocchio
 from crocoddyl import (ActionModelImpact, CallbackDDPVerbose, CallbackSolverDisplay, ShootingProblem, SolverDDP,
                        StatePinocchio, a2m, m2a)
-from crocoddyl.locomotion import (ContactSequenceHumanoid, createMultiphaseShootingProblem,
+from crocoddyl.locomotion import (ContactSequenceHumanoid, CubicHermiteSpline, createMultiphaseShootingProblem,
                                   createPhiFromContactSequence, createSwingTrajectories)
 
 from . import conf_talos_warm_start as conf
@@ -53,7 +53,7 @@ class Init:
         conf.ddq_init.append(np.zeros(rmodel.nv))
         dx_tsid = np.vstack([x_tsid[rmodel.nv:, :], np.matrix(conf.ddq_init).T])
         t_tsid = np.linspace(0., cs.contact_phases[-1].time_trajectory[-1], len(conf.ddq_init) + 1)
-        x_spl = crocoddyl.locomotion.CubicHermiteSpline(a2m(t_tsid), x_tsid, dx_tsid)
+        x_spl = CubicHermiteSpline(a2m(t_tsid), x_tsid, dx_tsid)
 
         state = StatePinocchio(rmodel)
         dt = conf.DT
