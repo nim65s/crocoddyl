@@ -1,5 +1,5 @@
 SET(${PROJECT_NAME}_LOCOMOTION_EXAMPLE_LOGS
-  talos_warm_start
+  #talos_warm_start
   )
 
 FOREACH(EXAMPLE ${${PROJECT_NAME}_LOCOMOTION_EXAMPLE_LOGS})
