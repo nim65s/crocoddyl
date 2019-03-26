@@ -1,4 +1,5 @@
 import sys
+from os.path import basename, dirname, join
 
 import numpy as np
 import pinocchio
@@ -9,6 +10,7 @@ from crocoddyl import (CallbackDDPLogger, CallbackDDPVerbose, CallbackSolverDisp
 
 WITHDISPLAY = 'disp' in sys.argv
 WITHPLOT = 'plot' in sys.argv
+CALLBACK = CallbackDDPVerbose(filename=join(dirname(__file__), 'log', basename(__file__)[:-3] + '.out'))
 
 # In this example test, we will solve the reaching-goal task with the Talos arm.
 # For that, we use the forward dynamics (with its analytical derivatives)
@@ -62,7 +64,7 @@ problem = ShootingProblem(x0, [runningModel] * T, terminalModel)
 # Creating the DDP solver for this OC problem, defining a logger
 ddp = SolverDDP(problem)
 cameraTF = [2., 2.68, 0.54, 0.2, 0.62, 0.72, 0.22]
-ddp.callback = [CallbackDDPVerbose()]
+ddp.callback = [CALLBACK]
 if WITHPLOT:
     ddp.callback.append(CallbackDDPLogger())
 if WITHDISPLAY:
@@ -84,6 +86,6 @@ if WITHDISPLAY:
 
 # Printing the reached position
 frame_idx = rmodel.getFrameId(frameName)
-print()
-print("The reached pose by the wrist is")
-print(ddp.datas()[-1].differential.pinocchio.oMf[frame_idx])
+CALLBACK.write("")
+CALLBACK.write("The reached pose by the wrist is")
+CALLBACK.write(ddp.datas()[-1].differential.pinocchio.oMf[frame_idx])

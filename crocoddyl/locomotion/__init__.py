@@ -7,7 +7,7 @@ from crocoddyl import (ActionModelImpact, ActivationModelWeightedQuad, Actuation
                        CostModelFrameVelocity, CostModelImpactCoM, CostModelState, CostModelSum,
                        DifferentialActionModelFloatingInContact, ImpulseModel6D, ImpulseModelMultiple,
                        IntegratedActionModelEuler, StatePinocchio, a2m, m2a)
-from locomote import CubicHermiteSpline
+from crocoddyl.locomotion import CubicHermiteSpline
 
 
 class EESplines(OrderedDict):
@@ -80,7 +80,7 @@ def createMultiphaseShootingProblem(rmodel, rdata, patch_name_map, cs, phi_c, ee
   :params rmodel: robot model of type pinocchio::model
   :params rdata: robot data of type pinocchio::data
   :params patch_name_map: dictionary mapping of contact_patch->robot_framename. e.g. "LF_Patch":leg_6_joint
-  :params cs: contact sequence of type locomote::ContactSequenceHumanoid
+  :params cs: contact sequence of type crocoddyl.locomotion::ContactSequenceHumanoid
   :params phi_c: centroidal reference of type CentroidalPhi
   :params ee_ref: end-effector trajectories of type EESplines
   :params dt: Scalar timestep between nodes.

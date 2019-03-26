@@ -6,10 +6,18 @@ In the solver, set up the logger with solver.callback = [CallbackName()], and ad
 object in argument if you want to use the display functionalities.
 '''
 
+from __future__ import print_function
+
 import copy
+import os
 import time
 
 from diagnostic import displayTrajectory
+
+try:
+    from StringIO import StringIO
+except ModuleNotFoundError:
+    from io import StringIO
 
 
 class CallbackDDPLogger:
@@ -37,25 +45,30 @@ class CallbackDDPLogger:
 
 
 class CallbackDDPVerbose:
-    def __init__(self, level=0):
+    def __init__(self, level=0, filename=False):
         self.level = level
+        self.filename = filename
+        if filename and os.path.isfile(filename):
+            os.remove(filename)
 
     def __call__(self, solver):
         if solver.iter % 10 == 0:
-            if self.level == 0:
-                print("iter \t cost \t      stop \t    grad \t  xreg \t      ureg \t step \t feas")
-            elif self.level == 1:
-                print("iter \t cost \t      stop \t    grad \t  xreg \t      ureg \t step \t feas \tdV-exp \t      dV")
-        if self.level == 0:
-            print("%4i  %0.5e  %0.5e  %0.5e  %10.5e  %0.5e   %0.4f     %1d" %
-                  (solver.iter, sum(copy.copy([d.cost for d in solver.datas()])), solver.stop,
-                   -solver.expectedImprovement()[1], solver.x_reg, solver.u_reg, solver.stepLength, solver.isFeasible))
-        elif self.level == 1:
-            print(
-                "%4i  %0.5e  %0.5e  %0.5e  %10.5e  %0.5e  %0.4f     %1d  %0.5e  %0.5e" %
-                (solver.iter, sum(copy.copy([d.cost
-                                             for d in solver.datas()])), solver.stop, -solver.expectedImprovement()[1],
-                 solver.x_reg, solver.u_reg, solver.stepLength, solver.isFeasible, solver.dV_exp, solver.dV))
+            line = "iter \t cost \t      stop \t    grad \t  xreg \t      ureg \t step \t feas"
+            if self.level == 1:
+                line += " \tdV-exp \t      dV",
+            self.write(line)
+        line = "%4i  %0.5e  %0.5e  %0.5e  %10.5e  %0.5e   %0.4f     %1d" % (
+            solver.iter, sum(copy.copy([d.cost for d in solver.datas()])), solver.stop,
+            -solver.expectedImprovement()[1], solver.x_reg, solver.u_reg, solver.stepLength, solver.isFeasible)
+        if self.level == 1:
+            line += "  %0.5e  %0.5e" % (solver.dV_exp, solver.dV),
+        self.write(line)
+
+    def write(self, line):
+        print(line)
+        if self.filename:
+            with open(self.filename, 'a') as f:
+                print(line, file=f)
 
 
 class CallbackSolverDisplay:

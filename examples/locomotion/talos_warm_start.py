@@ -1,10 +1,11 @@
-import locomote
+from os.path import basename, dirname, join
+
 import numpy as np
 import pinocchio
-from centroidal_utils import createMultiphaseShootingProblem, createPhiFromContactSequence, createSwingTrajectories
 from crocoddyl import (ActionModelImpact, CallbackDDPVerbose, CallbackSolverDisplay, ShootingProblem, SolverDDP,
                        StatePinocchio, a2m, m2a)
-from locomote import ContactSequenceHumanoid
+from crocoddyl.locomotion import (ContactSequenceHumanoid, createMultiphaseShootingProblem,
+                                  createPhiFromContactSequence, createSwingTrajectories)
 
 from . import conf_talos_warm_start as conf
 
@@ -13,6 +14,7 @@ robot = conf.robot
 rmodel = robot.model
 rdata = robot.data
 rmodel.defaultState = np.concatenate([m2a(robot.q0), np.zeros(rmodel.nv)])
+CALLBACK = CallbackDDPVerbose(filename=join(dirname(__file__), 'log', basename(__file__)[:-3] + '.out'))
 
 # ----------------Load Contact Phases-----------------------
 cs = ContactSequenceHumanoid(0)
@@ -51,7 +53,7 @@ class Init:
         conf.ddq_init.append(np.zeros(rmodel.nv))
         dx_tsid = np.vstack([x_tsid[rmodel.nv:, :], np.matrix(conf.ddq_init).T])
         t_tsid = np.linspace(0., cs.contact_phases[-1].time_trajectory[-1], len(conf.ddq_init) + 1)
-        x_spl = locomote.CubicHermiteSpline(a2m(t_tsid), x_tsid, dx_tsid)
+        x_spl = crocoddyl.locomotion.CubicHermiteSpline(a2m(t_tsid), x_tsid, dx_tsid)
 
         state = StatePinocchio(rmodel)
         dt = conf.DT
@@ -93,7 +95,7 @@ if conf.DISPLAY:
 # ----------------------
 
 ddp = SolverDDP(problem)
-ddp.callback = [CallbackDDPVerbose()]  # CallbackSolverTimer()]
+ddp.callback = [CALLBACK]  # CallbackSolverTimer()]
 if conf.RUNTIME_DISPLAY:
     ddp.callback.append(CallbackSolverDisplay(robot, 4))
 ddp.th_stop = 1e-9

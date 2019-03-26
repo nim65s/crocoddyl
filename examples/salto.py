@@ -11,6 +11,7 @@ iterations to converge.
 '''
 
 import sys
+from os.path import basename, dirname, join
 
 import numpy as np
 import pinocchio
@@ -29,6 +30,7 @@ from pinocchio.utils import eye, zero
 PHASE_ITERATIONS = {"initial": 200, "angle": 200, "landing": 200}
 PHASE_BACKUP = {"initial": False, "angle": False, "landing": False}
 BACKUP_PATH = "npydata/salto."
+CALLBACK = CallbackDDPVerbose(filename=join(dirname(__file__), 'log', basename(__file__)[:-3] + '.out'))
 
 if 'load' in sys.argv:
     PHASE_ITERATIONS = {k: 0 for k in PHASE_ITERATIONS}
@@ -200,7 +202,7 @@ PHASE_NAME = "initial"
 problem = ShootingProblem(initialState=x0, runningModels=models[:imp], terminalModel=models[imp])
 ddp = SolverDDP(problem)
 ddp.alphas = [4**(-n) for n in range(10)]
-ddp.callback = [CallbackDDPVerbose()]
+ddp.callback = [CALLBACK]
 ddp.th_stop = 1e-4
 us0 = [
     m.differential.quasiStatic(d.differential, rmodel.defaultState) for m, d in zip(ddp.models(), ddp.datas())[:imp]
@@ -210,7 +212,7 @@ us0 = [
 ]
 
 if PHASE_ITERATIONS[PHASE_NAME] > 0:
-    print("*** SOLVE %s ***" % PHASE_NAME)
+    CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(
     maxiter=PHASE_ITERATIONS[PHASE_NAME],
     regInit=.1,
@@ -235,7 +237,7 @@ ddp.th_stop = 5e-3
 for ANG in np.arange(.5, 3.2, .3):
     models[imp].costs['xreg'].cost.ref[3:7] = [0, np.sin(ANG), 0, np.cos(ANG)]
     if PHASE_ITERATIONS[PHASE_NAME] > 0:
-        print("*** SOLVE %s ang=%.1f ***" % (PHASE_NAME, ANG))
+        CALLBACK.write("*** SOLVE %s ang=%.1f ***" % (PHASE_NAME, ANG))
     ddp.solve(maxiter=PHASE_ITERATIONS[PHASE_NAME], regInit=.1, init_xs=ddp.xs, init_us=ddp.us, isFeasible=True)
     if PHASE_ITERATIONS[PHASE_NAME] > 0 and PHASE_BACKUP[PHASE_NAME]:
         np.save(BACKUP_PATH + '%s.%02d.xs.npy' % (PHASE_NAME, int(ANG * 10)), ddp.xs)
@@ -257,7 +259,7 @@ usddp = ddp.us
 problem = ShootingProblem(initialState=x0, runningModels=models[:-1], terminalModel=models[-1])
 ddp = SolverDDP(problem)
 ddp.alphas = [4**(-n) for n in range(10)]
-ddp.callback = [CallbackDDPVerbose()]
+ddp.callback = [CALLBACK]
 ddp.th_stop = 1e-4
 
 ddp.xs = xsddp + [rmodel.defaultState] * (len(models) - len(xsddp))
@@ -269,7 +271,7 @@ impact.costs['track30'].weight = 1e6
 impact.costs['track16'].weight = 1e6
 
 if PHASE_ITERATIONS[PHASE_NAME] > 0:
-    print("*** SOLVE %s ***" % PHASE_NAME)
+    CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(init_xs=ddp.xs, init_us=ddp.us, maxiter=PHASE_ITERATIONS[PHASE_NAME])
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:

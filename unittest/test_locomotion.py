@@ -1,7 +1,6 @@
 import numpy as np
-from centroidal_utils import createPhiFromContactSequence
 from crocoddyl import loadTalos
-from locomote import ContactSequenceHumanoid
+from crocoddyl.locomotion import ContactSequenceHumanoid, createPhiFromContactSequence
 
 MUSCOD_CS_OUTPUT_FILENAME = TRAJ_DIR = "unittest/data/test_locomotion.xml"
 CONTACT_SEQUENCE_XML_TAG = "contact_sequence"
