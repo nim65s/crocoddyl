@@ -23,6 +23,7 @@ SET(${PROJECT_NAME}_PYTHON_FILES
 
 SET(${PROJECT_NAME}_LOCOMOTION_PYTHON_FILES
   __init__.py
+  centroidal_utils.py
   )
 
 FOREACH(python ${${PROJECT_NAME}_PYTHON_FILES})
