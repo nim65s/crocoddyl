@@ -3,6 +3,7 @@ SET(${PROJECT_NAME}_PYTHON_TESTS
   activation
   actuation
   armature
+  boxsolvers
   contacts
   costs
   ddp_contact

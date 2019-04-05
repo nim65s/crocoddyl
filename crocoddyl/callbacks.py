@@ -12,7 +12,7 @@ import copy
 import os
 import time
 
-from diagnostic import displayTrajectory
+from .diagnostic import displayTrajectory
 
 
 class CallbackDDPLogger:

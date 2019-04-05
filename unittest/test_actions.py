@@ -2,11 +2,13 @@ import unittest
 
 import numpy as np
 from crocoddyl import ActionModelNumDiff, ActionModelUnicycle, ActionModelUnicycleVar
+from testutils import NUMDIFF_MODIFIER, assertNumDiff
 
 
 class ActionModelTestCase(unittest.TestCase):
     MODEL = None
     MODEL_NUMDIFF = None
+    NUMDIFF_MOD = NUMDIFF_MODIFIER
 
     def setUp(self):
         # Creating NumDiff action model
@@ -46,21 +48,23 @@ class ActionModelTestCase(unittest.TestCase):
         self.MODEL_NUMDIFF.calcDiff(self.DATA_NUMDIFF, x, u)
 
         # Checking the partial derivatives against NumDiff
-        tol = 10 * self.MODEL_NUMDIFF.disturbance
-        self.assertTrue(np.allclose(self.DATA.Fx, self.DATA_NUMDIFF.Fx, atol=tol), "Fx is wrong.")
-        self.assertTrue(np.allclose(self.DATA.Fu, self.DATA_NUMDIFF.Fu, atol=tol), "Fu is wrong.")
-        self.assertTrue(np.allclose(self.DATA.Lx, self.DATA_NUMDIFF.Lx, atol=tol), "Fx is wrong.")
-        self.assertTrue(np.allclose(self.DATA.Lu, self.DATA_NUMDIFF.Lu, atol=tol), "Fx is wrong.")
-        self.assertTrue(np.allclose(self.DATA.Lxx, self.DATA_NUMDIFF.Lxx, atol=tol), "Fx is wrong.")
-        self.assertTrue(np.allclose(self.DATA.Lxu, self.DATA_NUMDIFF.Lxu, atol=tol), "Fx is wrong.")
-        self.assertTrue(np.allclose(self.DATA.Luu, self.DATA_NUMDIFF.Luu, atol=tol), "Fx is wrong.")
+        tol = self.NUMDIFF_MOD * self.MODEL_NUMDIFF.disturbance
+        assertNumDiff(self.DATA.Fx, self.DATA_NUMDIFF.Fx, tol)
+        assertNumDiff(self.DATA.Fu, self.DATA_NUMDIFF.Fu, tol)
+        assertNumDiff(self.DATA.Lx, self.DATA_NUMDIFF.Lx, tol)
+        assertNumDiff(self.DATA.Lu, self.DATA_NUMDIFF.Lu, tol)
+        assertNumDiff(self.DATA.Lxx, self.DATA_NUMDIFF.Lxx, tol)
+        assertNumDiff(self.DATA.Lxu, self.DATA_NUMDIFF.Lxu, tol)
+        assertNumDiff(self.DATA.Luu, self.DATA_NUMDIFF.Luu, tol)
 
 
 class UnicycleTest(ActionModelTestCase):
+    NUMDIFF_MOD = 10.
     ActionModelTestCase.MODEL = ActionModelUnicycle()
 
 
 class UnicycleVarTest(ActionModelTestCase):
+    NUMDIFF_MOD = 10.
     ActionModelTestCase.MODEL = ActionModelUnicycleVar()
 
     def test_rollout_against_unicycle(self):

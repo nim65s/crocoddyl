@@ -1,13 +1,15 @@
 import numpy as np
 import scipy.linalg as scl
-from utils import raiseIfNan
+
+from .solver import SolverAbstract
+from .utils import raiseIfNan
 
 
 def rev_enumerate(l):
     return reversed(list(enumerate(l)))
 
 
-class SolverFDDP:
+class SolverFDDP(SolverAbstract):
     """ Run a modified version DDP solver, that is performing a more advanced
     feasibility search.
 
@@ -24,13 +26,10 @@ class SolverFDDP:
     """
 
     def __init__(self, shootingProblem):
-        self.problem = shootingProblem
-        self.allocate()
+        SolverAbstract.__init__(self, shootingProblem)
 
         self.isFeasible = False  # Change it to true if you know that datas[t].xnext = xs[t+1]
         self.alphas = [2**(-n) for n in range(10)]
-        self.th_acceptStep = .1
-        self.th_stop = 1e-9
         self.th_grad = 1e-12
 
         self.x_reg = 0
@@ -39,41 +38,6 @@ class SolverFDDP:
         self.regMax = 1e9
         self.regMin = 1e-9
         self.th_step = .5
-
-        self.callback = None
-
-    def models(self):
-        """ Return all action models
-        """
-        return self.problem.runningModels + [self.problem.terminalModel]
-
-    def datas(self):
-        """ Return the data for all action models.
-        """
-        return self.problem.runningDatas + [self.problem.terminalData]
-
-    def setCandidate(self, xs=None, us=None, isFeasible=False, copy=True):
-        """ Set the warm-point.
-
-        Set the solver candidate value for the decision variables, as a
-        trajectory xs,us of T+1 and T elements.
-        :params isFeasible: True for xs are obtained from integrating the us (roll-out).
-        :params copy: True for making a copy of the data
-        """
-        if xs is None:
-            xs = [m.State.zero() for m in self.models()]
-        elif copy:
-            xs = [x.copy() for x in xs]
-        if us is None:
-            us = [np.zeros(m.nu) for m in self.problem.runningModels]
-        elif copy:
-            us = [u.copy() for u in us]
-
-        assert (len(xs) == self.problem.T + 1)
-        assert (len(us) == self.problem.T)
-        self.xs = xs
-        self.us = us
-        self.isFeasible = isFeasible
 
     def calc(self):
         """ Compute the tangent (LQR) model.
@@ -141,10 +105,18 @@ class SolverFDDP:
         self.wasFeasible = False
         for i in range(maxiter):
             # print 'i',i
-            try:
-                self.computeDirection()
-            except ArithmeticError:
-                self.increaseRegularization()
+            recalc = True
+            while True:
+                try:
+                    self.computeDirection(recalc=recalc)
+                except ArithmeticError:
+                    recalc = False
+                    self.increaseRegularization()
+                    if self.x_reg == self.regMax:
+                        return self.xs, self.us, False
+                    else:
+                        continue
+                break
             d1, d2 = self.expectedImprovement()
 
             for a in self.alphas:
@@ -168,7 +140,7 @@ class SolverFDDP:
             if a == self.alphas[-1]:
                 self.increaseRegularization()
                 if self.x_reg == self.regMax:
-                    raise ValueError('Max regularization reached')
+                    return self.xs, self.us, False
             self.stepLength = a
             self.iter = i
             self.stop = sum(self.stoppingCriteria())
@@ -196,7 +168,7 @@ class SolverFDDP:
         self.u_reg = self.x_reg
 
     # DDP Specific
-    def allocate(self):
+    def allocateData(self):
         """  Allocate matrix space of Q,V and K.
         Done at init time (redo if problem change).
         """
@@ -269,6 +241,7 @@ class SolverFDDP:
                 self.Vx[t][:] = self.Qx[t] - 2 * np.dot(self.Qu[t], self.K[t]) + np.dot(
                     np.dot(self.k[t], self.Quu[t]), self.K[t])
             self.Vxx[t][:, :] = self.Qxx[t] - np.dot(self.Qxu[t], self.K[t])
+            self.Vxx[t][:, :] = 0.5 * (self.Vxx[t][:, :] + self.Vxx[t][:, :].T)  # ensure symmetric
 
             if self.x_reg != 0:
                 self.Vxx[t][range(model.ndx), range(model.ndx)] += self.x_reg
@@ -281,8 +254,8 @@ class SolverFDDP:
         The forward-pass basically applies a new policy and then rollout the
         system. After this rollouts, it's checked if this policy provides a
         reasonable improvement. For that we use Armijo condition to evaluated the
-        choosen step length.
-        :param stepLenght: step length
+        chosen step length.
+        :param stepLength: step length
         """
         # Argument b is introduce for debug purpose.
         # Argument warning is also introduce for debug: by default, it masks the numpy warnings

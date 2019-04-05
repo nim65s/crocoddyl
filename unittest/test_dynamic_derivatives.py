@@ -1,13 +1,13 @@
+from functools import partial
+
 import numpy as np
 import pinocchio
 from crocoddyl import loadTalosArm
 from crocoddyl.utils import EPS
 from numpy.linalg import inv, norm, pinv
-# ------------------------------------------------------------------------
-# ------------------------------------------------------------------------
-# ------------------------------------------------------------------------
+from pinocchio import aba, rnea
 from pinocchio.utils import cross, rand, skew, zero
-from testutils import df_dq, df_dx
+from testutils import NUMDIFF_MODIFIER, assertNumDiff, df_dq, df_dx
 
 robot = loadTalosArm()
 model = robot.model
@@ -82,8 +82,10 @@ da_dv = df_dx(lambda v_: pinocchio.aba(model, data, q, v_, tau), v)
 pinocchio.computeABADerivatives(model, data, q, v, tau)
 
 h = np.sqrt(2 * EPS)
-assert (absmax(da_dq - data.ddq_dq) < 1e4 * h)
-assert (absmax(da_dv - data.ddq_dv) < 1e4 * h)
+assertNumDiff(da_dq, data.ddq_dq,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-2, is now 2.11e-4 (see assertNumDiff.__doc__)
+assertNumDiff(da_dv, data.ddq_dv,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-2, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 # Check RNEA Derivatives (without forces)
 
@@ -91,7 +93,8 @@ a = pinocchio.aba(model, data, q, v, tau)
 dtau_dq = df_dq(model, lambda q_: pinocchio.rnea(model, data, q_, v, a), q)
 pinocchio.computeRNEADerivatives(model, data, q, v, a)
 
-assert (absmax(dtau_dq - data.dtau_dq) < 1e4 * h)
+assertNumDiff(dtau_dq, data.dtau_dq,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 # Check RNEA versus ABA derivatives.
 
@@ -99,7 +102,7 @@ Mi = pinocchio.computeMinverse(model, data, q)
 assert (absmax(Mi - inv(data.M)) < 1e-6)
 
 D = np.dot(Mi, data.dtau_dq)
-assert (absmax(D + data.ddq_dq) < 1e-3)
+assertNumDiff(D, -data.ddq_dq, NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 # ---- ABA AND RNEA with forces
 
@@ -113,16 +116,18 @@ a = pinocchio.aba(model, data, q, v, tau, fs)
 dtau_dqn = df_dq(model, lambda q_: pinocchio.rnea(model, data, q_, v, a, fs), q)
 pinocchio.computeRNEADerivatives(model, data, q, v, a, fs)
 dtau_dq = data.dtau_dq.copy()
-assert (absmax(dtau_dqn - dtau_dq) < 1e-3)
+assertNumDiff(dtau_dqn, dtau_dq,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 # Check ABA derivatives versus finite diff (with forces)
 da_dqn = df_dq(model, lambda q_: pinocchio.aba(model, data, q_, v, tau, fs), q)
 pinocchio.computeABADerivatives(model, data, q, v, tau, fs)
 da_dq = data.ddq_dq.copy()
-assert (absmax(da_dq - da_dqn) < 3e-3)
+assertNumDiff(da_dq, da_dqn, NUMDIFF_MODIFIER * h)  # threshold was 3e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 # Check ABA versus RNEA derivatives (with forces)
-assert (absmax(inv(data.M) * dtau_dq + da_dq) < 1e-3)
+assertNumDiff(inv(data.M) * dtau_dq, -da_dq,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 # Check ABA versus RNEA + forces (no derivatives)
 del a
@@ -243,13 +248,9 @@ def calcwxv(q, vq, aq):
     return cross(data.v[-1].angular, data.v[-1].linear)
 
 
-def f(_q):
-    return calcaa(_q, vq, aq)
-
-
-daa_dqn = df_dq(model, lambda _q: calcaa(_q, vq, aq), q)
-da_dqn = df_dq(model, lambda _q: calca(_q, vq, aq), q)
-dwxv_dqn = df_dq(model, lambda _q: calcwxv(_q, vq, aq), q)
+daa_dqn = df_dq(model, partial(calcaa, vq=vq, aq=aq), q)
+da_dqn = df_dq(model, partial(calca, vq=vq, aq=aq), q)
+dwxv_dqn = df_dq(model, partial(calcwxv, vq=vq, aq=aq), q)
 
 pinocchio.computeJointJacobians(model, data, q)
 J = pinocchio.getJointJacobian(model, data, model.joints[-1].id, pinocchio.ReferenceFrame.LOCAL)
@@ -260,7 +261,7 @@ pinocchio.computeForwardKinematicsDerivatives(model, data, q, vq, aq)
 # da_dq = data.ddq_dq
 dv_dq, da_dq, da_dv, da_da = pinocchio.getJointAccelerationDerivatives(model, data, model.joints[-1].id,
                                                                        pinocchio.ReferenceFrame.LOCAL)
-assert (absmax(da_dq - da_dqn) < 1e-3)
+assertNumDiff(da_dq, da_dqn, NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 
 def calcv(q, vq, aq):
@@ -273,17 +274,19 @@ def calcw(q, vq, aq):
     return data.v[-1].angular
 
 
-dv_dqn = df_dq(model, lambda _q: calcv(_q, vq, aq), q)
-dw_dqn = df_dq(model, lambda _q: calcw(_q, vq, aq), q)
-assert (absmax(dv_dq[:3, :] - dv_dqn) < 1e-3)
-assert (absmax(dv_dq[3:, :] - dw_dqn) < 1e-3)
+dv_dqn = df_dq(model, partial(calcv, vq=vq, aq=aq), q)
+dw_dqn = df_dq(model, partial(calcw, vq=vq, aq=aq), q)
+assertNumDiff(dv_dq[:3, :], dv_dqn,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
+assertNumDiff(dv_dq[3:, :], dw_dqn,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 daa_dq = da_dq[:3, :] + skew(vw) * dv_dq[:3, :] - skew(vv) * dv_dq[3:, :]
-assert (absmax(daa_dq - daa_dq) < 1e-3)
+assertNumDiff(daa_dq, daa_dqn, NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 # ------------------------------------------------------------------------
 # Check contact dynamics 3D contact
-# del vq, aq
+del vq, aq
 q = pinocchio.randomConfiguration(model)
 v = rand(model.nv) * 2 - 1
 tau = rand(model.nv) * 2 - 1
@@ -311,8 +314,8 @@ af = inv(K) * r
 a = af[:model.nv]
 f = af[model.nv:]
 fs[-1] = pinocchio.Force(-f, zero(3))
-assert (absmax(pinocchio.rnea(model, data, q, v, a, fs) - (M * a + b + J.T * f)) < 1e-6)
-assert (absmax(pinocchio.aba(model, data, q, v, tau, fs) - (inv(M) * (tau - b - J.T * f))) < 1e-6)
+assert (absmax(rnea(model, data, q, v, a, fs) - (M * a + b + J.T * f)) < 1e-6)
+assert (absmax(aba(model, data, q, v, tau, fs) - (inv(M) * (tau - b - J.T * f))) < 1e-6)
 
 # Check contact-dyninv deriv
 # af  = Ki r  = [ MJt; J0 ] [ tau-b;-gamma ]
@@ -321,14 +324,16 @@ assert (absmax(pinocchio.aba(model, data, q, v, tau, fs) - (inv(M) * (tau - b - 
 #     = -Ki [ M'a + Jt'f + b' ; J' a + gamma' ]
 
 # Check M'a + J'f + b'
-dtau_dqn = df_dq(model, lambda _q: pinocchio.rnea(model, data, _q, v, a, fs), q)
-dtau_dvn = df_dq(model, lambda _v: pinocchio.rnea(model, data, q, _v, a, fs), v)
+dtau_dqn = df_dq(model, lambda _q: rnea(model, data, _q, v, a, fs), q)
+dtau_dvn = df_dq(model, lambda _v: rnea(model, data, q, _v, a, fs), v)
 
 pinocchio.computeRNEADerivatives(model, data, q, v, a, fs)
 dtau_dq = data.dtau_dq.copy()
 dtau_dv = data.dtau_dv.copy()
-assert (absmax(dtau_dq - dtau_dqn) < 1e-3)
-assert (absmax(dtau_dv - dtau_dvn) < 1e-3)
+assertNumDiff(dtau_dq, dtau_dqn,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
+assertNumDiff(dtau_dv, dtau_dvn,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 
 # Check gamma'
@@ -350,8 +355,10 @@ vv, vw = data.v[-1].linear, data.v[-1].angular
 dgamma_dq = da_dq[:3, :] + skew(vw) * dv_dq[:3, :] - skew(vv) * dv_dq[3:, :]
 dgamma_dv = da_dv[:3, :] + skew(vw) * J[:3, :] - skew(vv) * J[3:, :]
 
-assert (absmax(dgamma_dq - dgamma_dqn) < 1e-3)
-assert (absmax(dgamma_dv - dgamma_dvn) < 1e-3)
+assertNumDiff(dgamma_dq, dgamma_dqn,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
+assertNumDiff(dgamma_dv, dgamma_dvn,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 
 # Check (Ki r)'
@@ -371,16 +378,18 @@ def cid(q_, v_, tau_):
 dcid_dqn = df_dq(model, lambda _q: cid(_q, v, tau), q)
 KJn = K * dcid_dqn
 KJ = -np.vstack([dtau_dq, dgamma_dq])
-assert (absmax(KJ - KJn) / model.nv < 1e-3)
+assertNumDiff(KJ, KJn, NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 dcid_dq = -inv(K) * np.vstack([dtau_dq, dgamma_dq])
-assert (absmax(dcid_dqn - dcid_dq) / model.nv < 1e-3)
+assertNumDiff(dcid_dqn, dcid_dq,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 dcid_dvn = df_dx(lambda _v: cid(q, _v, tau), v)
 
 dcid_dv = -inv(K) * np.vstack([dtau_dv, dgamma_dv])
 
-assert (absmax(dcid_dvn - dcid_dv) / model.nv < 1e-3)
+assertNumDiff(dcid_dvn, dcid_dv,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 # ------------------------------------------
 # Check 6d contact
@@ -431,16 +440,18 @@ dgamma_dq = da_dq.copy()
 dcid_dqn = df_dq(model, lambda _q: cid2(_q, v, tau), q)
 KJn = K * dcid_dqn
 KJ = -np.vstack([dtau_dq, dgamma_dq])
-assert (absmax(KJ - KJn) / model.nv < 1e-3)
+assertNumDiff(KJ, KJn, NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 dcid_dq = -inv(K) * np.vstack([dtau_dq, dgamma_dq])
-assert (absmax(dcid_dqn - dcid_dq) / model.nv < 1e-3)
+assertNumDiff(dcid_dqn, dcid_dq,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-3, is now 2.11e-4 (see assertNumDiff.__doc__)
 
 dcid_dun = df_dx(lambda _u: cid2(q, v, _u), tau)
 # K*D = [ I_nv; O_ncxnv ]
 # D = Kinv * [ I_nv ; 0_ncxnv ] = Kinv[:nv,:]
 dcid_du = inv(K)[:, :model.nv]
-assert (absmax(dcid_du - dcid_dun) / model.nv < 1e-5)
+assertNumDiff(dcid_du, dcid_dun,
+              NUMDIFF_MODIFIER * h)  # threshold was 1e-5, is now 2.11e-4 (see assertNumDiff.__doc__)
 '''
 
 # --- Jerk
