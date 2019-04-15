@@ -12,8 +12,8 @@ The source code is released under the [BSD 3-Clause license](LICENSE).
 **With additional support from the Gepetto team at LAAS-CNRS.**
 
 [![License BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-blue.svg?style=flat)](https://tldrlegal.com/license/bsd-3-clause-license-%28revised%29#fulltext)
-[![pipeline status](https://gepgitlab.laas.fr/loco-3d/cddp/badges/master/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/cddp/commits/master)
-[![coverage report](https://gepgitlab.laas.fr/loco-3d/cddp/badges/master/coverage.svg)](https://gepgitlab.laas.fr/loco-3d/cddp/commits/master)
+[![pipeline status](https://gepgitlab.laas.fr/loco-3d/crocoddyl/badges/devel/pipeline.svg)](https://gepgitlab.laas.fr/loco-3d/crocoddyl/pipelines?ref=devel)
+[![coverage report](https://gepgitlab.laas.fr/loco-3d/crocoddyl/badges/devel/coverage.svg)](https://gepgitlab.laas.fr/loco-3d/cddp/commits/devel)
 
 If you want to follow the current developments, you can directly refer to the [devel branch](https://gepgitlab.laas.fr/loco-3d/cddp/tree/devel).
 
@@ -23,7 +23,7 @@ If you want to follow the current developments, you can directly refer to the [d
 
 ### Installation through robotpkg
 
-You can install this package throught robotpkg. robotpkg is a package manager tailored for robotics softwares. It greatly simplifies the release of new versions along with the management of their dependencies. You just need to add the robotpkg apt repository to your sources.list and then use `sudo apt install robotpkg-example-crocoddyl`:
+You can install this package throught robotpkg. robotpkg is a package manager tailored for robotics softwares. It greatly simplifies the release of new versions along with the management of their dependencies. You just need to add the robotpkg apt repository to your sources.list and then use `sudo apt install robotpkg-py27-crocoddyl`:
 
 If you have never added robotpkg as a softwares repository, please follow first the instructions from 1 to 3. Otherwise, go directly to instruction 4. Those instructions are similar to the installation procedures presented in [http://robotpkg.openrobots.org/debian.html](http://robotpkg.openrobots.org/debian.html).
 
