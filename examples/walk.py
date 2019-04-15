@@ -1,4 +1,5 @@
 import sys
+from os.path import basename, dirname, join
 
 import numpy as np
 import pinocchio
@@ -14,6 +15,7 @@ from pinocchio.utils import eye, zero
 
 BACKUP_PATH = "npydata/jump."
 WITHDISPLAY = 'disp' in sys.argv
+CALLBACK = CallbackDDPVerbose(filename=join(dirname(__file__), 'log', basename(__file__)[:-3] + '.out'))
 
 robot = loadTalosLegs()
 robot.model.armature[6:] = .3
@@ -172,13 +174,13 @@ if 'push' in sys.argv:
 # ---------------------------------------------------------------------------------------------
 problem = ShootingProblem(initialState=x0, runningModels=models[:-1], terminalModel=models[-1])
 ddp = SolverDDP(problem)
-ddp.callback = [CallbackDDPLogger(), CallbackDDPVerbose()]
+ddp.callback = [CallbackDDPLogger(), CALLBACK]
 if 'cb' in sys.argv and WITHDISPLAY:
     ddp.callback.append(CallbackSolverDisplay(robot, rate=-1))
 ddp.th_stop = 1e-6
 
 fddp = SolverFDDP(problem)
-fddp.callback = [CallbackDDPLogger(), CallbackDDPVerbose()]
+fddp.callback = [CallbackDDPLogger(), CALLBACK]
 if 'cb' in sys.argv and WITHDISPLAY:
     fddp.callback.append(CallbackSolverDisplay(robot, rate=-1))
 fddp.th_stop = 1e-6
@@ -193,7 +195,7 @@ xs1 = [problem.initialState] * len(ddp.models())
 dimp1 = ddp.datas()[imp1]
 dimp2 = ddp.datas()[imp2]
 
-print("*** SOLVE ***")
+CALLBACK.write("*** SOLVE ***")
 fddp.solve(
     maxiter=50,
     # ,init_xs=xs0

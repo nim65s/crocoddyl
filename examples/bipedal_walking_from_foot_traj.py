@@ -1,4 +1,5 @@
 import sys
+from os.path import basename, dirname, join
 
 import numpy as np
 import pinocchio
@@ -11,6 +12,7 @@ from pinocchio.utils import zero
 
 WITHDISPLAY = 'disp' in sys.argv
 WITHPLOT = 'plot' in sys.argv
+CALLBACK = CallbackDDPVerbose(filename=join(dirname(__file__), 'log', basename(__file__)[:-3] + '.out'))
 
 
 def plotSolution(rmodel, xs, us, figIndex=1, show=True):
@@ -310,8 +312,8 @@ for i, phase in enumerate(GAITPHASES):
                                           value['stepKnots'], value['supportKnots']))
 
     # Added the callback functions
-    print('*** SOLVE ' + key + ' ***')
-    ddp[i].callback = [CallbackDDPLogger(), CallbackDDPVerbose()]
+    CALLBACK.write('*** SOLVE ' + key + ' ***')
+    ddp[i].callback = [CallbackDDPLogger(), CALLBACK()]
     if WITHDISPLAY:
         ddp[i].callback.append(CallbackSolverDisplay(talos_legs, 4, 1, cameraTF))
 

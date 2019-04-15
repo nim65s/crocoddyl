@@ -15,6 +15,7 @@ the trajectory optimization too unstable.
 '''
 
 import sys
+from os.path import basename, dirname, join
 
 import numpy as np
 import pinocchio
@@ -31,6 +32,7 @@ from pinocchio.utils import eye, rotate, zero
 PHASE_ITERATIONS = {"initial": 200, "landing": 200, "frontal": 200, "lateral": 200, "twist": 200}
 PHASE_BACKUP = {"initial": False, "landing": False, "frontal": False, "lateral": False, "twist": False}
 BACKUP_PATH = "npydata/jump."
+CALLBACK = CallbackDDPVerbose(filename=join(dirname(__file__), 'log', basename(__file__)[:-3] + '.out'))
 
 if 'load' in sys.argv:
     PHASE_ITERATIONS = {k: 0 for k in PHASE_ITERATIONS}
@@ -186,7 +188,7 @@ PHASE_NAME = "initial"
 
 problem = ShootingProblem(initialState=x0, runningModels=models[:imp], terminalModel=models[imp])
 ddp = SolverDDP(problem)
-ddp.callback = [CallbackDDPLogger(), CallbackDDPVerbose()]  # CallbackSolverDisplay(robot,rate=5) ]
+ddp.callback = [CallbackDDPLogger(), CALLBACK]  # CallbackSolverDisplay(robot,rate=5) ]
 ddp.th_stop = 1e-4
 us0 = [
     m.differential.quasiStatic(d.differential, rmodel.defaultState) for m, d in zip(ddp.models(), ddp.datas())[:imp]
@@ -195,7 +197,7 @@ us0 = [
     for m, d in zip(ddp.models(), ddp.datas())[imp + 1:-1]
 ]
 
-print("*** SOLVE %s ***" % PHASE_NAME)
+CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(
     maxiter=PHASE_ITERATIONS[PHASE_NAME],
     regInit=.1,
@@ -217,7 +219,7 @@ usddp = ddp.us
 
 problem = ShootingProblem(initialState=x0, runningModels=models[:-1], terminalModel=models[-1])
 ddp = SolverDDP(problem)
-ddp.callback = [CallbackDDPLogger(), CallbackDDPVerbose()]  # CallbackSolverDisplay(robot,rate=5,freq=10) ]
+ddp.callback = [CallbackDDPLogger(), CALLBACK]  # CallbackSolverDisplay(robot,rate=5,freq=10) ]
 
 ddp.xs = xsddp + [rmodel.defaultState] * (len(models) - len(xsddp))
 ddp.us = usddp + [
@@ -228,7 +230,7 @@ ddp.th_stop = 5e-4
 impact.costs['track30'].weight = 1e6
 impact.costs['track16'].weight = 1e6
 
-print("*** SOLVE %s ***" % PHASE_NAME)
+CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(init_xs=ddp.xs, init_us=ddp.us, maxiter=PHASE_ITERATIONS[PHASE_NAME], isFeasible=True)
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:
@@ -255,7 +257,7 @@ x[15] = -1.
 models[fig].differential.costs.costs['xreg'].cost.ref = x.copy()
 models[fig].differential.costs.costs['xreg'].cost.activation.weights[rmodel.nv:] = 0
 
-print("*** SOLVE %s ***" % PHASE_NAME)
+CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 impact.costs['track30'].weight = 10**6
 impact.costs['track16'].weight = 10**6
 models[fig].differential.costs.costs['xreg'].weight = 10**6
@@ -288,7 +290,7 @@ impact.costs['track30'].weight = 10**6
 impact.costs['track16'].weight = 10**6
 models[fig].differential.costs.costs['xreg'].weight = 10**6
 
-print("*** SOLVE %s ***" % PHASE_NAME)
+CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(init_xs=ddp.xs, init_us=ddp.us, maxiter=PHASE_ITERATIONS[PHASE_NAME], isFeasible=True)
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:
@@ -316,7 +318,7 @@ models[-1].differential.costs.costs['xreg'].cost.activation.weights[5] = 0
 
 impact.costs['track30'].weight = 10**6
 impact.costs['track16'].weight = 10**6
-print("*** SOLVE %s ***" % PHASE_NAME)
+CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(init_xs=ddp.xs, init_us=ddp.us, maxiter=PHASE_ITERATIONS[PHASE_NAME], isFeasible=True)
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:
