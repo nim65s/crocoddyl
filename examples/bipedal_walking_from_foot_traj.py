@@ -313,7 +313,7 @@ for i, phase in enumerate(GAITPHASES):
 
     # Added the callback functions
     CALLBACK.write('*** SOLVE ' + key + ' ***')
-    ddp[i].callback = [CallbackDDPLogger(), CALLBACK()]
+    ddp[i].callback = [CallbackDDPLogger(), CALLBACK]
     if WITHDISPLAY:
         ddp[i].callback.append(CallbackSolverDisplay(talos_legs, 4, 1, cameraTF))
 
