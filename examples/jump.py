@@ -205,8 +205,9 @@ ddp.solve(
     init_us=us0[:imp])
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:
-    ddp.xs = [x for x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)]
-    ddp.us = [u for u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)]
+    ddp.setCandidate(
+        xs=[x for x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)],
+        us=[u for u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)])
 elif PHASE_BACKUP[PHASE_NAME]:
     np.save(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME, ddp.xs)
     np.save(BACKUP_PATH + '%s.us.npy' % PHASE_NAME, ddp.us)
@@ -221,11 +222,12 @@ problem = ShootingProblem(initialState=x0, runningModels=models[:-1], terminalMo
 ddp = SolverDDP(problem)
 ddp.callback = [CallbackDDPLogger(), CALLBACK]  # CallbackSolverDisplay(robot,rate=5,freq=10) ]
 
-ddp.xs = xsddp + [rmodel.defaultState] * (len(models) - len(xsddp))
-ddp.us = usddp + [
-    np.zeros(0) if isinstance(m, ActionModelImpact) else m.differential.quasiStatic(
-        d.differential, rmodel.defaultState) for m, d in zip(ddp.models(), ddp.datas())[len(usddp):-1]
-]
+ddp.setCandidate(
+    xs=xsddp + [rmodel.defaultState] * (len(models) - len(xsddp)),
+    us=usddp + [
+        np.zeros(0) if isinstance(m, ActionModelImpact) else m.differential.quasiStatic(
+            d.differential, rmodel.defaultState) for m, d in zip(ddp.models(), ddp.datas())[len(usddp):-1]
+    ])
 ddp.th_stop = 5e-4
 impact.costs['track30'].weight = 1e6
 impact.costs['track16'].weight = 1e6
@@ -234,8 +236,9 @@ CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(init_xs=ddp.xs, init_us=ddp.us, maxiter=PHASE_ITERATIONS[PHASE_NAME], isFeasible=True)
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:
-    ddp.xs = [x for x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)]
-    ddp.us = [u for u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)]
+    ddp.setCandidate(
+        xs=[x for x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)],
+        us=[u for u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)])
 elif PHASE_BACKUP[PHASE_NAME]:
     np.save(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME, ddp.xs)
     np.save(BACKUP_PATH + '%s.us.npy' % PHASE_NAME, ddp.us)
@@ -243,8 +246,8 @@ elif PHASE_BACKUP[PHASE_NAME]:
 disp(ddp.xs)
 
 # Save for future use in initialization of advanced jumps
-xjump0 = [x.copy() for x in ddp.xs]
-ujump0 = [u.copy() for u in ddp.us]
+xjump0 = [x for x in ddp.xs]
+ujump0 = [u for u in ddp.us]
 
 # ---------------------------------------------------------------------------------------------
 # Jump with frontal scissors.
@@ -264,8 +267,9 @@ models[fig].differential.costs.costs['xreg'].weight = 10**6
 ddp.solve(init_xs=ddp.xs, init_us=ddp.us, maxiter=PHASE_ITERATIONS[PHASE_NAME], isFeasible=True)
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:
-    ddp.xs = [_x for _x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)]
-    ddp.us = [_u for _u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)]
+    ddp.setCandidate(
+        xs=[x.copy() for x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)],
+        us=[u.copy() for u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)])
 elif PHASE_BACKUP[PHASE_NAME]:
     np.save(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME, ddp.xs)
     np.save(BACKUP_PATH + '%s.us.npy' % PHASE_NAME, ddp.us)
@@ -276,8 +280,7 @@ disp(ddp.xs)
 # Jump with lateral scissors.
 PHASE_NAME = "lateral"
 
-ddp.xs = xjump0
-ddp.us = ujump0
+ddp.setCandidate(xs=xjump0, us=ujump0)
 
 fig = high + 2
 x = x0.copy()
@@ -294,8 +297,9 @@ CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(init_xs=ddp.xs, init_us=ddp.us, maxiter=PHASE_ITERATIONS[PHASE_NAME], isFeasible=True)
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:
-    ddp.xs = [_x for _x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)]
-    ddp.us = [_u for _u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)]
+    ddp.setCandidate(
+        xs=[x.copy() for x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)],
+        us=[u.copy() for u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)])
 elif PHASE_BACKUP[PHASE_NAME]:
     np.save(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME, ddp.xs)
     np.save(BACKUP_PATH + '%s.us.npy' % PHASE_NAME, ddp.us)
@@ -309,8 +313,7 @@ models[fig].differential.costs.costs['xreg'].cost.activation.weights[rmodel.nv:]
 # Jump with twist PI/2
 PHASE_NAME = "twist"
 
-ddp.xs = xjump0
-ddp.us = ujump0
+ddp.setCandidate(xs=xjump0, us=ujump0)
 
 impact.costs['track16'].cost.ref = SE3(rotate('z', 1.5), zero(3)) * impact.costs['track16'].cost.ref
 impact.costs['track30'].cost.ref = SE3(rotate('z', 1.5), zero(3)) * impact.costs['track30'].cost.ref
@@ -322,8 +325,9 @@ CALLBACK.write("*** SOLVE %s ***" % PHASE_NAME)
 ddp.solve(init_xs=ddp.xs, init_us=ddp.us, maxiter=PHASE_ITERATIONS[PHASE_NAME], isFeasible=True)
 
 if PHASE_ITERATIONS[PHASE_NAME] == 0:
-    ddp.xs = [_x for _x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)]
-    ddp.us = [_u for _u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)]
+    ddp.setCandidate(
+        xs=[x.copy() for x in np.load(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME)],
+        us=[u.copy() for u in np.load(BACKUP_PATH + '%s.us.npy' % PHASE_NAME)])
 elif PHASE_BACKUP[PHASE_NAME]:
     np.save(BACKUP_PATH + '%s.xs.npy' % PHASE_NAME, ddp.xs)
     np.save(BACKUP_PATH + '%s.us.npy' % PHASE_NAME, ddp.us)
