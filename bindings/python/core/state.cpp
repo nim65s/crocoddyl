@@ -14,6 +14,14 @@ class StateAbstract_py : public StateAbstract<Type, Scalar>,
  public:
     StateAbstract_py(int nx, int ndx) : StateAbstract<Type, Scalar>(nx, ndx) {}
 
+    VectorType<Type, Scalar> zero() {
+        return this->get_override("zero")();
+    }
+
+    VectorType<Type, Scalar> rand() {
+        return this->get_override("rand")();
+    }
+
     VectorType<Type, Scalar>
     diff(const VectorType<Type, Scalar>& x0,
          const VectorType<Type, Scalar>& x1) {
@@ -69,6 +77,18 @@ R"(Initialize the state dimensions.
 
 :param nx: dimension of state configuration vector,
 :param ndx: dimension of state tangent vector)"))
+    .def("zero",
+         pure_virtual(&StateAbstract_py<Type, Scalar>::zero),
+         bp::args(" self"),
+R"(Return a zero reference state.
+
+:return zero reference state)")
+    .def("rand",
+         pure_virtual(&StateAbstract_py<Type, Scalar>::rand),
+         bp::args(" self"),
+R"(Return a random reference state.
+
+:return random reference state)")
     .def("diff",
          pure_virtual(&StateAbstract_py<Type, Scalar>::diff),
          bp::args(" self", " x0", " x1"),

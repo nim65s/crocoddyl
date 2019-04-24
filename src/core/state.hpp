@@ -35,6 +35,10 @@ class StateAbstract  {
     }
     virtual ~StateAbstract() {}  // = default;
 
+    virtual VectorType<Type, Scalar, NX> zero() = 0;
+
+    virtual VectorType<Type, Scalar, NX> rand() = 0;
+
     virtual VectorType<Type, Scalar, NDX>
     diff(const VectorType<Type, Scalar, NX>& x0,
          const VectorType<Type, Scalar, NX>& x1) = 0;
