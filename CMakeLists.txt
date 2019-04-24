@@ -37,6 +37,8 @@ ENDIF()
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 
+SET(CMAKE_CXX_FLAGS "-std=c++0x")
+
 SETUP_PROJECT()
 
 # Add the different required and optional dependencies
