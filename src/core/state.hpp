@@ -68,6 +68,10 @@ class StateAbstract  {
     void printer(const VectorType<Type, Scalar, NX>& x0,
                  const VectorType<Type, Scalar, NX>& x1,
                  const VectorType<Type, Scalar, NDX>& dx) {
+        std::cout << "zero" << std::endl;
+        std::cout << zero() << std::endl;
+        std::cout << "rand" << std::endl;
+        std::cout << rand() << std::endl;
         std::cout << "diff" << std::endl;
         std::cout << diff(x0, x1) << std::endl;
         std::cout << "integrate" << std::endl;

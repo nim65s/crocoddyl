@@ -15,37 +15,37 @@ class StateAbstract_py : public StateAbstract<Type, Scalar>,
     StateAbstract_py(int nx, int ndx) : StateAbstract<Type, Scalar>(nx, ndx) {}
 
     VectorType<Type, Scalar> zero() {
-        return this->get_override("zero")();
+        return bp::call<VectorType<Type, Scalar>>(this->get_override("zero").ptr());
     }
 
     VectorType<Type, Scalar> rand() {
-        return this->get_override("rand")();
+        return bp::call<VectorType<Type, Scalar>>(this->get_override("rand").ptr());
     }
 
     VectorType<Type, Scalar>
     diff(const VectorType<Type, Scalar>& x0,
          const VectorType<Type, Scalar>& x1) {
-        return this->get_override("diff")(x0, x1);
+        return bp::call<VectorType<Type, Scalar>>(this->get_override("diff").ptr(), x0, x1);
     }
 
     VectorType<Type, Scalar>
     integrate(const VectorType<Type, Scalar>& x,
               const VectorType<Type, Scalar>& dx) {
-        return this->get_override("integrate")(x, dx);
+        return bp::call<VectorType<Type, Scalar>>(this->get_override("integrate").ptr(), x, dx);
     }
 
     MatrixType<Type, Scalar>
     Jdiff(const VectorType<Type, Scalar>& x0,
           const VectorType<Type, Scalar>& x1,
           std::string firstsecond = "both") {
-        return this->get_override("Jdiff")(x0, x1, firstsecond);
+        return bp::call<MatrixType<Type, Scalar>>(this->get_override("Jdiff").ptr(), x0, x1, firstsecond);
     }
 
     MatrixType<Type, Scalar>
     Jintegrate(const VectorType<Type, Scalar>& x,
                const VectorType<Type, Scalar>& dx,
                std::string firstsecond = "both") {
-        return this->get_override("Jintegrate")(x, dx, firstsecond);
+        return bp::call<MatrixType<Type, Scalar>>(this->get_override("Jintegrate").ptr(), x, dx, firstsecond);
     }
 };
 
