@@ -6,10 +6,10 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef CORE_STATE_HXX_
-#define CORE_STATE_HXX_
+#ifndef CROCODDYL_CORE_STATE_HXX_
+#define CROCODDYL_CORE_STATE_HXX_
 
-#include <core/state.hpp>
+#include <crocoddyl/core/state.hpp>
 
 
 namespace crocoddyl {
@@ -57,4 +57,4 @@ void StateAbstract<Type, Scalar, NX, NDX>::printer(const VectorType<Type, Scalar
 
 }  // namespace crocoddyl
 
-#endif  // CORE_STATE_HXX_
+#endif  // CROCODDYL_CORE_STATE_HXX_

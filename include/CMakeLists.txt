@@ -1,6 +1,6 @@
 
 SET(${PROJECT_NAME}_HEADERS
-  core/state.hpp
+  crocoddyl/core/state.hpp
   )
 
 IF(UNIX)

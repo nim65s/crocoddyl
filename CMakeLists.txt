@@ -58,8 +58,8 @@ OPTION(BUILD_PYTHON_INTERFACE "Build the python binding" ON)
 
 
 # Include and add the main directory
-INCLUDE_DIRECTORIES(src)
-ADD_SUBDIRECTORY(src)
+INCLUDE_DIRECTORIES(include)
+ADD_SUBDIRECTORY(include)
 
 
 # Build the Python interface

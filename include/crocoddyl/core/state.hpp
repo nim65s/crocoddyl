@@ -6,8 +6,8 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef CORE_STATE_HPP_
-#define CORE_STATE_HPP_
+#ifndef CROCODDYL_CORE_STATE_HPP_
+#define CROCODDYL_CORE_STATE_HPP_
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
@@ -66,6 +66,6 @@ class StateAbstract  {
 
 }  // namespace crocoddyl
 
-#include <core/state.hxx>
+#include <crocoddyl/core/state.hxx>
 
-#endif  // CORE_STATE_HPP_
+#endif  // CROCODDYL_CORE_STATE_HPP_

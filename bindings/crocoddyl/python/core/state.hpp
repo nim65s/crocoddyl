@@ -6,10 +6,10 @@
 // All rights reserved.
 ///////////////////////////////////////////////////////////////////////////////
 
-#ifndef BINDINGS_CROCODDYL_PYTHON_CORE_STATE_HPP_
-#define BINDINGS_CROCODDYL_PYTHON_CORE_STATE_HPP_
+#ifndef CROCODDYL_PYTHON_CORE_STATE_HPP_
+#define CROCODDYL_PYTHON_CORE_STATE_HPP_
 
-#include <core/state.hpp>
+#include <crocoddyl/core/state.hpp>
 
 
 namespace crocoddyl {
@@ -148,4 +148,4 @@ partial derivative by setting firstsecond='first' or firstsecond='second'.
 }  // namespace python
 }  // namespace crocoddyl
 
-#endif  // BINDINGS_CROCODDYL_PYTHON_CORE_STATE_HPP_
+#endif  // CROCODDYL_PYTHON_CORE_STATE_HPP_
