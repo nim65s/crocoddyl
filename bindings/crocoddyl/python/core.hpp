@@ -11,16 +11,14 @@
 
 #include <crocoddyl/python/core/state.hpp>
 
-
 namespace crocoddyl {
 namespace python {
 
-template <bool Type, typename Scalar>
-void exposeCore() {
-    exposeStateAbstract<Type, Scalar>();
+template <bool Type, typename Scalar> void exposeCore() {
+  exposeStateAbstract<Type, Scalar>();
 }
 
-}  // namespace python
-}  // namespace crocoddyl
+} // namespace python
+} // namespace crocoddyl
 
-#endif  // CROCODDYL_PYTHON_CORE_CORE_HPP_
+#endif // CROCODDYL_PYTHON_CORE_CORE_HPP_

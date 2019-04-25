@@ -11,7 +11,6 @@ INCLUDE(cmake/test.cmake)
 INCLUDE(cmake/boost.cmake)
 INCLUDE(cmake/python.cmake)
 
-
 # Set up project properties
 SET(PROJECT_NAMESPACE loco-3d)
 SET(PROJECT_NAME crocoddyl)

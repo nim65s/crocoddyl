@@ -1,10 +1,10 @@
 
 SET(${PROJECT_NAME}_HEADERS
   crocoddyl/core/state.hpp
+  crocoddyl/core/state.hxx
   )
 
 IF(UNIX)
-  # Create target libpinocchio.so
   ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_HEADERS})
   SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
   PKG_CONFIG_USE_DEPENDENCY(${PROJECT_NAME} eigen3)
