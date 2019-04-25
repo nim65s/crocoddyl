@@ -9,9 +9,9 @@
 #ifndef CORE_STATE_HPP_
 #define CORE_STATE_HPP_
 
-#include <string>
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
+#include <string>
 
 
 namespace crocoddyl {
@@ -25,15 +25,9 @@ using VectorType = MatrixType<Type, Scalar, Rows, 1>;
 template <bool Type, typename Scalar, int NX = -1, int NDX = -1>
 class StateAbstract  {
  public:
-    StateAbstract(int nx, int ndx) : nx_(nx), ndx_(ndx) {
-        if (NX != -1) {
-            assert(NX == nx);
-        }
-        if (NDX != -1) {
-            assert(NDX == ndx);
-        }
-    }
-    virtual ~StateAbstract() {}  // = default;
+    StateAbstract(int nx, int ndx);
+
+    virtual ~StateAbstract();
 
     virtual VectorType<Type, Scalar, NX> zero() = 0;
 
@@ -57,30 +51,13 @@ class StateAbstract  {
                const VectorType<Type, Scalar, NDX>& dx,
                std::string firstsecond = "both") = 0;
 
-    int nx() const {
-        return nx_;
-    }
+    int nx() const;
 
-    int ndx() const {
-        return ndx_;
-    }
+    int ndx() const;
 
     void printer(const VectorType<Type, Scalar, NX>& x0,
                  const VectorType<Type, Scalar, NX>& x1,
-                 const VectorType<Type, Scalar, NDX>& dx) {
-        std::cout << "zero" << std::endl;
-        std::cout << zero() << std::endl;
-        std::cout << "rand" << std::endl;
-        std::cout << rand() << std::endl;
-        std::cout << "diff" << std::endl;
-        std::cout << diff(x0, x1) << std::endl;
-        std::cout << "integrate" << std::endl;
-        std::cout << integrate(x0, dx) << std::endl;
-        std::cout << "Jdiff" << std::endl;
-        std::cout << Jdiff(x0, x1) << std::endl;
-        std::cout << "Jintegrate" << std::endl;
-        std::cout << Jintegrate(x0, dx) << std::endl;
-    }
+                 const VectorType<Type, Scalar, NDX>& dx);
 
  private:
     int nx_;
@@ -88,5 +65,7 @@ class StateAbstract  {
 };
 
 }  // namespace crocoddyl
+
+#include <core/state.hxx>
 
 #endif  // CORE_STATE_HPP_
