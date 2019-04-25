@@ -1,10 +1,19 @@
-#include <eigenpy/eigenpy.hpp>
-// #include <eigenpy/geometry.hpp>
+///////////////////////////////////////////////////////////////////////////////
+// BSD 3-Clause License
+//
+// Copyright (C) 2018-2019, LAAS-CNRS
+// Copyright note valid unless otherwise stated in individual files.
+// All rights reserved.
+///////////////////////////////////////////////////////////////////////////////
+
+#ifndef BINDINGS_CROCODDYL_PYTHON_CORE_STATE_HPP_
+#define BINDINGS_CROCODDYL_PYTHON_CORE_STATE_HPP_
+
 #include <core/state.hpp>
-#include <boost/python.hpp>
 
 
 namespace crocoddyl {
+namespace python {
 
 namespace bp = boost::python;
 
@@ -50,18 +59,8 @@ class StateAbstract_py : public StateAbstract<Type, Scalar>,
 };
 
 
-
-BOOST_PYTHON_MODULE(libcrocoddyl_pywrap) {
-    eigenpy::enableEigenPy();
-    // eigenpy::exposeAngleAxis();
-    // eigenpy::exposeQuaternion();
-    eigenpy::enableEigenPySpecific<Eigen::Matrix<double, Eigen::Dynamic, 1>>();
-
-    const bool Type = true;
-    typedef double Scalar;
-
-    // eigenpy::enableEigenPySpecific<Eigen::Matrix<Scalar, Eigen::Dynamic, 1>();
-
+template <bool Type, typename Scalar>
+void exposeStateAbstract() {
     bp::class_<StateAbstract_py<Type, Scalar>, boost::noncopyable>(
         "StateAbstract",
         R"(Abstract class for the state representation.
@@ -146,4 +145,7 @@ partial derivative by setting firstsecond='first' or firstsecond='second'.
     .def("printer",  &StateAbstract_py<Type, Scalar>::printer);
 }
 
+}  // namespace python
 }  // namespace crocoddyl
+
+#endif  // BINDINGS_CROCODDYL_PYTHON_CORE_STATE_HPP_

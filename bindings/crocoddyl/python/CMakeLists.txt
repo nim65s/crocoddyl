@@ -1,5 +1,5 @@
 SET(${PROJECT_NAME}_PYTHON_SOURCES
-  core/state.cpp
+  crocoddyl.cpp
   )
 
 ADD_LIBRARY(${PROJECT_NAME}_pywrap SHARED ${${PROJECT_NAME}_PYTHON_SOURCES})
