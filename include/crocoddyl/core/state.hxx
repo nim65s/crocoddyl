@@ -14,8 +14,7 @@
 namespace crocoddyl {
 
 template <bool Type, typename Scalar, int NX, int NDX>
-StateAbstract<Type, Scalar, NX, NDX>::StateAbstract(int nx, int ndx)
-    : nx_(nx), ndx_(ndx) {
+StateAbstract<Type, Scalar, NX, NDX>::StateAbstract(int nx, int ndx) : nx_(nx), ndx_(ndx) {
   if (NX != -1) {
     assert(NX == nx);
   }
@@ -38,10 +37,9 @@ int StateAbstract<Type, Scalar, NX, NDX>::ndx() const {
 }
 
 template <bool Type, typename Scalar, int NX, int NDX>
-void StateAbstract<Type, Scalar, NX, NDX>::printer(
-    const VectorType<Type, Scalar, NX> &x0,
-    const VectorType<Type, Scalar, NX> &x1,
-    const VectorType<Type, Scalar, NDX> &dx) {
+void StateAbstract<Type, Scalar, NX, NDX>::printer(const VectorType<Type, Scalar, NX> &x0,
+                                                   const VectorType<Type, Scalar, NX> &x1,
+                                                   const VectorType<Type, Scalar, NDX> &dx) {
   std::cout << "zero" << std::endl;
   std::cout << zero() << std::endl;
   std::cout << "rand" << std::endl;
@@ -56,6 +54,6 @@ void StateAbstract<Type, Scalar, NX, NDX>::printer(
   std::cout << Jintegrate(x0, dx) << std::endl;
 }
 
-} // namespace crocoddyl
+}  // namespace crocoddyl
 
-#endif // CROCODDYL_CORE_STATE_HXX_
+#endif  // CROCODDYL_CORE_STATE_HXX_

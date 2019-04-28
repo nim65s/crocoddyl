@@ -26,5 +26,5 @@ BOOST_PYTHON_MODULE(libcrocoddyl_pywrap) {
   exposeCore<Type, Scalar>();
 }
 
-} // namespace python
-} // namespace crocoddyl
+}  // namespace python
+}  // namespace crocoddyl
