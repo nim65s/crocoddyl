@@ -11,6 +11,9 @@ test:
 
 format:
   image: gepetto/linters
+  before_script:
+    - ln -s /root/setup.cfg /builds
+    - ln -s /root/.clang-format /builds
   script:
     - ls -lA /builds
     - flake8 .
