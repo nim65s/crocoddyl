@@ -17,6 +17,7 @@ the trajectory optimization too unstable.
 import sys
 
 import numpy as np
+
 import pinocchio
 from crocoddyl import (ActionModelImpact, ActivationModelInequality, ActivationModelWeightedQuad,
                        ActuationModelFreeFloating, CallbackDDPLogger, CallbackDDPVerbose, ContactModel6D,
@@ -224,11 +225,11 @@ problem = ShootingProblem(initialState=x0, runningModels=models[:-1], terminalMo
 ddp = SolverDDP(problem)
 ddp.callback = [CallbackDDPLogger(), CallbackDDPVerbose()]  # CallbackSolverDisplay(robot,rate=5,freq=10) ]
 
-ddp.setCandidate(xs=xsddp + [rmodel.defaultState] * (len(models) - len(xsddp)),
-                 us=usddp + [
-                     np.zeros(0) if isinstance(m, ActionModelImpact) else m.differential.quasiStatic(
-                         d.differential, rmodel.defaultState) for m, d in zip(ddp.models(), ddp.datas())[len(usddp):-1]
-                 ])
+us = [
+    np.zeros(0) if isinstance(m, ActionModelImpact) else m.differential.quasiStatic(
+        d.differential, rmodel.defaultState) for m, d in zip(ddp.models(), ddp.datas())[len(usddp):-1]
+]
+ddp.setCandidate(xs=xsddp + [rmodel.defaultState] * (len(models) - len(xsddp)), us=usddp + us)
 ddp.th_stop = 5e-4
 impact.costs['track30'].weight = 1e6
 impact.costs['track16'].weight = 1e6
