@@ -12,6 +12,7 @@ test:
 format:
   image: gepetto/linters
   script:
+    - ls /builds
     - flake8 .
     - yapf -dr .
     - check-clang-format.sh
