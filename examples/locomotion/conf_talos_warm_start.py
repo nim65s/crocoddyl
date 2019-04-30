@@ -1,4 +1,5 @@
 import pickle
+import sys
 from os.path import dirname, join
 
 from crocoddyl import loadTalos
@@ -8,7 +9,7 @@ robot = loadTalos()
 robot.model.armature[6:] = 1.
 # ---------------------------------------------------------
 
-DISPLAY = True
+DISPLAY = 'disp' in sys.argv
 RUNTIME_DISPLAY = False
 DT = 0.01
 
