@@ -278,18 +278,30 @@ void test_velocity_from_Jintegrate_Jdiff(StateTypes::Type state_type) {
 //----------------------------------------------------------------------------//
 
 void register_state_unit_tests(StateTypes::Type state_type) {
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_state_dimension, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_integrate_against_difference, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_difference_against_integrate, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_Jdiff_firstsecond, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_Jint_firstsecond, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_Jdiff_num_diff_firstsecond, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_Jint_num_diff_firstsecond, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_Jdiff_against_numdiff, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_Jintegrate_against_numdiff, state_type)));
+  std::ostringstream oss(std::ios_base::trunc);
+  oss << "test_state_dimension " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_state_dimension, state_type), oss.str()));
+  oss << "test_integrate_against_difference " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_integrate_against_difference, state_type), oss.str()));
+  oss << "test_difference_against_integrate " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_difference_against_integrate, state_type), oss.str()));
+  oss << "test_Jdiff_firstsecond " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_Jdiff_firstsecond, state_type), oss.str()));
+  oss << "test_Jint_firstsecond " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_Jint_firstsecond, state_type), oss.str()));
+  oss << "test_Jdiff_num_diff_firstsecond " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_Jdiff_num_diff_firstsecond, state_type), oss.str()));
+  oss << "test_Jint_num_diff_firstsecond " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_Jint_num_diff_firstsecond, state_type), oss.str()));
+  oss << "test_Jdiff_against_numdiff " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_Jdiff_against_numdiff, state_type), oss.str()));
+  oss << "test_Jintegrate_against_numdiff " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_Jintegrate_against_numdiff, state_type), oss.str()));
+  oss << "test_Jdiff_and_Jintegrate_are_inverses " << state_type;
   framework::master_test_suite().add(
-      BOOST_TEST_CASE(boost::bind(&test_Jdiff_and_Jintegrate_are_inverses, state_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_velocity_from_Jintegrate_Jdiff, state_type)));
+      BOOST_TEST_CASE_NAME(boost::bind(&test_Jdiff_and_Jintegrate_are_inverses, state_type), oss.str()));
+  oss << "test_velocity_from_Jintegrate_Jdiff " << state_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_velocity_from_Jintegrate_Jdiff, state_type), oss.str()));
 }
 
 bool init_function() {

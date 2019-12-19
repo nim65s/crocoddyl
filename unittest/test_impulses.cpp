@@ -167,13 +167,21 @@ void test_update_force_diff(ImpulseModelTypes::Type test_type) {
 //----------------------------------------------------------------------------//
 
 void register_unit_tests(ImpulseModelTypes::Type test_type) {
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_construct_data, test_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_calc_no_computation, test_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_calc_fetch_jacobians, test_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_calc_diff_no_computation, test_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_calc_diff_fetch_derivatives, test_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_update_force, test_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_update_force_diff, test_type)));
+  std::ostringstream oss(std::ios_base::trunc);
+  oss << "test_construct_data " << test_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_construct_data, test_type), oss.str()));
+  oss << "test_calc_no_computation " << test_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_calc_no_computation, test_type), oss.str()));
+  oss << "test_calc_fetch_jacobians " << test_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_calc_fetch_jacobians, test_type), oss.str()));
+  oss << "test_calc_diff_no_computation " << test_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_calc_diff_no_computation, test_type), oss.str()));
+  oss << "test_calc_diff_fetch_derivatives " << test_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_calc_diff_fetch_derivatives, test_type), oss.str()));
+  oss << "test_update_force " << test_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_update_force, test_type), oss.str()));
+  oss << "test_update_force_diff " << test_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_update_force_diff, test_type), oss.str()));
 }
 
 bool init_function() {

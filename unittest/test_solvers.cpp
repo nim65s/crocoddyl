@@ -113,20 +113,24 @@ void test_solver_against_kkt_solver(SolverTypes::Type solver_type, ActionModelTy
 
 bool init_function() {
   size_t nb_running_models = 10;
+  std::ostringstream oss(std::ios_base::trunc);
 
   for (size_t action_type = 0; action_type < ActionModelTypes::all.size(); ++action_type) {
+    oss << "test_kkt_dimension " << action_type;
     framework::master_test_suite().add(
-        BOOST_TEST_CASE(boost::bind(&test_kkt_dimension, ActionModelTypes::all[action_type], nb_running_models)));
-    framework::master_test_suite().add(BOOST_TEST_CASE(
-        boost::bind(&test_kkt_search_direction, ActionModelTypes::all[action_type], nb_running_models)));
+        BOOST_TEST_CASE_NAME(boost::bind(&test_kkt_dimension, ActionModelTypes::all[action_type], nb_running_models), oss.str()));
+    oss << "test_kkt_search_direction " << action_type;
+    framework::master_test_suite().add(BOOST_TEST_CASE_NAME(
+        boost::bind(&test_kkt_search_direction, ActionModelTypes::all[action_type], nb_running_models), oss.str()));
   }
 
   // We start from 1 as 0 is the kkt solver
   for (size_t solver_type = 1; solver_type < SolverTypes::all.size(); ++solver_type) {
     for (size_t action_type = 0; action_type < ActionModelTypes::all.size(); ++action_type) {
+      oss << "test_kkt_dimension " << solver_type << " " << action_type;
       framework::master_test_suite().add(
-          BOOST_TEST_CASE(boost::bind(&test_solver_against_kkt_solver, SolverTypes::all[solver_type],
-                                      ActionModelTypes::all[action_type], nb_running_models)));
+          BOOST_TEST_CASE_NAME(boost::bind(&test_solver_against_kkt_solver, SolverTypes::all[solver_type],
+                                      ActionModelTypes::all[action_type], nb_running_models), oss.str()));
     }
   }
   return true;

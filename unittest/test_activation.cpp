@@ -147,9 +147,13 @@ void test_partial_derivatives_against_numdiff(TestTypes::Type test_type) {
 //----------------------------------------------------------------------------//
 
 void register_unit_tests(TestTypes::Type type) {
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_construct_data, type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_calc_returns_a_value, type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_partial_derivatives_against_numdiff, type)));
+  std::ostringstream oss(std::ios_base::trunc);
+  oss << "test_construct_data " << type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_construct_data, type), oss.str()));
+  oss << "test_calc_returns_a_value " << type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_calc_returns_a_value, type), oss.str()));
+  oss << "test_partial_derivatives_against_numdiff " << type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_partial_derivatives_against_numdiff, type), oss.str()));
 }
 
 bool init_function() {

@@ -103,11 +103,16 @@ void test_partial_derivatives_against_numdiff(ActionModelTypes::Type action_mode
 //----------------------------------------------------------------------------//
 
 void register_action_model_unit_tests(ActionModelTypes::Type action_model_type) {
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_construct_data, action_model_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_calc_returns_state, action_model_type)));
-  framework::master_test_suite().add(BOOST_TEST_CASE(boost::bind(&test_calc_returns_a_cost, action_model_type)));
+  std::ostringstream oss(std::ios_base::trunc);
+  oss << "test_construct_data " << action_model_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_construct_data, action_model_type), oss.str()));
+  oss << "test_calc_returns_state " << action_model_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_calc_returns_state, action_model_type), oss.str()));
+  oss << "test_calc_returns_a_cost " << action_model_type;
+  framework::master_test_suite().add(BOOST_TEST_CASE_NAME(boost::bind(&test_calc_returns_a_cost, action_model_type), oss.str()));
+  oss << "test_partial_derivatives_against_numdiff " << action_model_type;
   framework::master_test_suite().add(
-      BOOST_TEST_CASE(boost::bind(&test_partial_derivatives_against_numdiff, action_model_type)));
+      BOOST_TEST_CASE_NAME(boost::bind(&test_partial_derivatives_against_numdiff, action_model_type), oss.str()));
 }
 
 bool init_function() {
