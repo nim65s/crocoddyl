@@ -12,7 +12,7 @@ SET(${PROJECT_NAME}_PYTHON_BINDINGS_FILES
 ADD_LIBRARY(${PROJECT_NAME}_pywrap SHARED ${${PROJECT_NAME}_PYTHON_BINDINGS_SOURCES} ${${PROJECT_NAME}_PYTHON_BINDINGS_HEADERS})
 SET_TARGET_PROPERTIES(${PROJECT_NAME}_pywrap PROPERTIES SUFFIX ${PYTHON_EXT_SUFFIX})
 
-TARGET_LINK_LIBRARIES(${PROJECT_NAME}_pywrap ${PROJECT_NAME} eigenpy::eigenpy)
+TARGET_LINK_LIBRARIES(${PROJECT_NAME}_pywrap ${PROJECT_NAME} eigenpy::eigenpy${PYTHON_COMPONENT})
 TARGET_LINK_BOOST_PYTHON(${PROJECT_NAME}_pywrap)
 # BOOST_PYTHON_MEMBER_FUNCTION_OVERLOADS spews conversion warnings from int to long unsigned int.
 # Unfortunately, using literals does not work in a macro. As such, this turns them off for the entire wrapper:
