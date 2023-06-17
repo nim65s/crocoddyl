@@ -1,0 +1,29 @@
+name: Tests on ubuntu 18.04
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: ubuntu:18.04
+    steps:
+      - name: install git & wget in container
+        run: apt update && apt install -qy git wget
+      - uses: actions/checkout@v3
+      - name: get submodule
+        run: rm -rf cmake && git clone https://github.com/jrl-umi3218/jrl-cmakemodules cmake
+      - name: setup robotpkg
+        run: >
+          wget http://robotpkg.openrobots.org/packages/debian/robotpkg.gpg -O /robotpkg.gpg
+          && echo "deb [arch=amd64 signed-by=/robotpkg.gpg] http://robotpkg.openrobots.org/packages/debian/pub bionic robotpkg"
+          >> /etc/apt/sources.list.d/robotpkg.list
+      - name: install dependencies
+        run: apt update && apt install -qy robotpkg-py36-example-robot-data python3-scipy cmake
+      - name: configure
+        run: cmake -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=/usr/bin/python3 .
+        env:
+          CMAKE_PREFIX_PATH: /opt/openrobots
+      - name: build
+        run: make
+      - name: test
+        run: make test
